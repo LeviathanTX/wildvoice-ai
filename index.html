@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildVoice AI - Hunting Call Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #2d5a2d 0%, #8B4513 100%);
+            min-height: 100vh;
+        }
+        .record-btn {
+            background: linear-gradient(145deg, #8B4513, #A0522D);
+            transition: all 0.3s ease;
+        }
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .recording {
+            background: #DC2626;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white/95 rounded-xl shadow-2xl p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-green-900 mb-2">🦌 WildVoice AI 🎯</h1>
+                <p class="text-xl text-amber-700">Master Your Hunting Calls with AI Coaching</p>
+            </div>
+
+            <!-- Call Selection -->
+            <div class="mb-6">
+                <label class="block text-lg font-semibold mb-2">Choose Your Call:</label>
+                <select id="callType" class="w-full p-3 border-2 border-amber-300 rounded-lg">
+                    <option>🦌 Elk Bugle</option>
+                    <option>🦃 Turkey Yelp</option>
+                    <option>🦌 Deer Grunt</option>
+                    <option>🦆 Duck Quack</option>
+                    <option>🐺 Coyote Howl</option>
+                </select>
+            </div>
+
+            <!-- Record Button -->
+            <div class="text-center mb-6">
+                <button id="recordBtn" class="record-btn text-white font-bold py-4 px-8 rounded-full text-xl">
+                    🎤 Start Recording
+                </button>
+                <div id="status" class="mt-4 text-gray-600"></div>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="hidden bg-amber-50 rounded-lg p-6">
+                <h3 class="text-xl font-bold mb-4">Analysis Results:</h3>
+                <div id="feedback"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        
+        const recordBtn = document.getElementById('recordBtn');
+        const status = document.getElementById('status');
+        const results = document.getElementById('results');
+        const feedback = document.getElementById('feedback');
+        
+        recordBtn.addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordBtn.textContent = '🎤 Start Recording';
+                recordBtn.classList.remove('recording');
+                status.textContent = 'Processing...';
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks);
+                        analyzeAudio(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    recordBtn.textContent = '⏹️ Stop Recording';
+                    recordBtn.classList.add('recording');
+                    status.textContent = 'Recording...';
+                } catch (error) {
+                    status.textContent = '❌ Microphone access denied';
+                    console.error('Error:', error);
+                }
+            }
+        });
+        
+        function analyzeAudio(audioBlob) {
+            // Simulate analysis
+            const duration = (Math.random() * 4 + 1).toFixed(1);
+            const volume = Math.floor(Math.random() * 30 + 65);
+            
+            results.classList.remove('hidden');
+            feedback.innerHTML = `
+                <p><strong>Duration:</strong> ${duration}s</p>
+                <p><strong>Volume:</strong> ${volume}%</p>
+                <p><strong>Tip:</strong> Keep practicing for better accuracy!</p>
+            `;
+            status.textContent = 'Analysis complete!';
+        }
+    </script>
+</body>
+</html>
